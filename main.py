@@ -68,6 +68,7 @@ class Application:
 
     def setup_routes(self):
         self.webserver.route("/hello")(self.hello_world)
+        self.webserver.route("/")(self.hello_world)
         # self.webserver.route("/metrics")(self.metrics)
         self.webserver.route(
             "/people", methods=[HttpMethod.GET.value, HttpMethod.POST.value]
