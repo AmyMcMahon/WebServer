@@ -1,11 +1,12 @@
 import sys
 import logging
+import json
 import time
 from lib_config.config import Config
 from lib_utils.blocktimer import BlockTimer
 from datetime import datetime, UTC
 from lib_metrics_datamodel.metrics_datamodel import Device, DataSnapshot
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from threading import Lock
 from enum import Enum
 import uuid
@@ -81,6 +82,53 @@ class Application:
     def hello_world(self):
         self.logger.info("Hello world route called")
         return {"message": "Hello, World!"}
+
+    def handle_people(self):
+        """Handle /people endpoint for GET and POST methods."""
+        if request.method == HttpMethod.GET.value:
+            self.logger.info("Getting all people")
+            return jsonify(list(self.people.values())), 200
+
+        elif request.method == HttpMethod.POST.value:
+            person = request.get_json()
+            if not person or "name" not in person or "dob" not in person:
+                return jsonify({"error": "Name and DoB required"}), 400
+
+            person_id = str(uuid.uuid4())
+            person["id"] = person_id
+            self.people[person_id] = person
+            self.logger.info(f"Created new person with ID {person_id}")
+            return jsonify(person), 201
+
+    def handle_person(self, person_id):
+        """Handle /people/<person_id> endpoint for GET, PUT and DELETE methods."""
+        if request.method == HttpMethod.GET.value:
+            if person_id not in self.people:
+                return jsonify({"error": "Person not found"}), 404
+
+            self.logger.info(f"Getting person {person_id}")
+            return jsonify(self.people[person_id])
+
+        elif request.method == HttpMethod.PUT.value:
+            if person_id not in self.people:
+                return jsonify({"error": "Person not found"}), 404
+
+            person = request.get_json()
+            if not person or "name" not in person or "dob" not in person:
+                return jsonify({"error": "Name and DoB required"}), 400
+
+            person["id"] = person_id
+            self.people[person_id] = person
+            self.logger.info(f"Updated person {person_id}")
+            return jsonify(person)
+
+        elif request.method == HttpMethod.DELETE.value:
+            # Structured so a delete of something already deleted doesn't cause an error
+            if person_id in self.people:
+                del self.people[person_id]
+
+            self.logger.info(f"Deleted person {person_id}")
+            return "", 204
 
     # def metrics(self):
     #     self.logger.info("Metrics route called")
