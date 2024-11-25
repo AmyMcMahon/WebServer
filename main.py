@@ -56,7 +56,9 @@ class Application:
             self.logger.info(
                 "Starting Flask web server on port %s", self.config.web.port
             )
-            self.webserver.run(debug=self.config.web.debug, port=self.config.web.port)
+            self.webserver.run(
+                debug=self.config.web.debug, host="0.0.0.0", port=self.config.web.port
+            )
             self.logger.info("Application completed successfully")
             return 0
 
