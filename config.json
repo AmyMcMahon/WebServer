@@ -1,9 +1,12 @@
 {
     "web": {
-        "host": "0.0.0.0",
+        "host": "https://webserver-6n25.onrender.com/",
         "port": 54545,
         "debug": true,
         "cache_duration_seconds": 10
+    },
+    "database": {
+        "connection_string": "postgresql://web_server_db_user:DHCYYl2mncS3StZOx6EEDfF1N2AKgEGs@dpg-ct6ssgrtq21c73ec1spg-a/web_server_db"
     },
     "logging_config": {
         "console_output": {
