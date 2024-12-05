@@ -25,7 +25,6 @@ class Application:
         self.logger = logging.getLogger(__name__)
         self.webserver = Flask(__name__)
         self.setup_routes()
-        # self.engine = create_engine(self.config.database.connection_string)
         self.logger.debug("Application initialized sucessfully")
 
     def run(self) -> int:
@@ -50,9 +49,29 @@ class Application:
 
     def setup_routes(self):
         self.webserver.route("/")(self.dashboard)
+        self.webserver.route("/devices", methods=["GET", "POST"])(self.handle_devices)
+        self.webserver.route("/metrics", methods=["GET"])(self.get_metrics)
 
     def dashboard(self):
-        return "Hello, World!"
+        return {"message": "Hello, World!"}
+        self.logger.info("Dashboard route called")
+
+    def handle_devices(self):
+
+        self.logger.info("Devices route called")
+
+    def get_metrics(self):
+        self.logger.info("Metrics route called - fetching metrics")
+        conversion_method = request.args.get("conversion_method", default=0, type=int)
+        try:
+            with BlockTimer("read_metrics", self.logger):
+                data_snapshot = Device.read_PC_metrics()
+                rest_ready_json = data_snapshot.to_dict()
+        except Exception as e:
+            self.logger.exception(
+                "Metrics route failed with error: %(error)s", {"error": str(e)}
+            )
+            return {"error": str(e)}
 
 
 def main() -> int:
@@ -63,6 +82,9 @@ def main() -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
+else:
+    appForWSGI = Application()
+    app = appForWSGI.webserver
 
 # class CachedData:
 #     def __init__(self, cache_duration_seconds: int = 30):
