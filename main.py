@@ -25,7 +25,7 @@ class Application:
         self.logger = logging.getLogger(__name__)
         self.webserver = Flask(__name__)
         self.setup_routes()
-        self.engine = create_engine(self.config.database.connection_string)
+        # self.engine = create_engine(self.config.database.connection_string)
         self.logger.debug("Application initialized sucessfully")
 
     def run(self) -> int:
