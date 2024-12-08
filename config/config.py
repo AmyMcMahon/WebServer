@@ -14,6 +14,13 @@ class Config:
             self.config = json.load(f)       
 
     def get(self, key: str, default= None):
-        return self.config.get(key, default)
+        keys = key.split('.')
+        value = self.config
+        try:
+            for k in keys:
+                value = value[k]
+            return value
+        except (KeyError, TypeError):
+            return default
         
         
