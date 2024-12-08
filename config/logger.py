@@ -10,6 +10,10 @@ class Logger:
         Logger.logger.setLevel(logging.DEBUG)
         fmt = '%(asctime)s | %(levelname)8s | %(message)s'
 
+        if not os.path.exists(log_path):
+            log_path = os.path.join(os.getcwd(), 'logs', 'app.log')
+            os.makedirs(os.path.dirname(log_path), exist_ok=True)
+
         file_handler = logging.FileHandler(log_path)
         file_handler.setLevel(logging.DEBUG)
         file_formatter = logging.Formatter(fmt)
