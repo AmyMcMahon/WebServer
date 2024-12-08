@@ -16,6 +16,8 @@ class Application:
     def run(self, server_ip: str = "", port: int = 0) -> int:
         try:
             self.logger.info("Server running...")
+            self.logger.debug(self.config.get('web.host'))
+            self.logger.debug(self.config.get('web.port'))
             server_host = server_ip if len(server_ip) > 0 else self.config.get('web.host')
             server_port = port if port > 0 else self.config.get('web.port')
             self.logger.info(f"Starting Flask Server: {server_host}:{server_port}")
