@@ -26,7 +26,7 @@ class Application:
     
     def setup_routes(self):
         """Setup the routes for the application."""
-        self.webserver.route("/hello")(self.hello_world)
+        self.webserver.route("/")(self.hello_world)
 
     def hello_world(self):
         """Hello world route."""
