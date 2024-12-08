@@ -1,7 +1,7 @@
 {
     "log_path": "logs/app.log",
     "web": {
-        "host": "localhost",
+        "host": "0.0.0.0",
         "port": 54545,
         "debug": true
     },
