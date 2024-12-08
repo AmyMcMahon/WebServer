@@ -27,9 +27,14 @@ class Application:
     def setup_routes(self):
         """Setup the routes for the application."""
         self.webserver.route("/")(self.hello_world)
+        self.webserver.route("/metrics", methods=['GET'])(self.metrics)
 
     def hello_world(self):
         """Hello world route."""
         self.logger.info("Hello world route called")
         return {'message': 'Hello, World!'}
 
+    def metrics(self):
+        """Metrics route."""
+        self.logger.info("Metrics route called")
+        return {'message': 'Metrics route called'}
