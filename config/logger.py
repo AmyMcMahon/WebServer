@@ -5,13 +5,10 @@ import sys
 class Logger:
     logger = logging.getLogger()
 
-    def setUpLogger():
+    @staticmethod
+    def setUpLogger(log_path: str = None):
         Logger.logger.setLevel(logging.DEBUG)
         fmt = '%(asctime)s | %(levelname)8s | %(message)s'
-
-        log_dir = os.path.join(os.path.dirname(__file__), 'logs')
-        os.makedirs(log_dir, exist_ok=True)
-        log_path = os.path.join(log_dir, 'app.log')
 
         file_handler = logging.FileHandler(log_path)
         file_handler.setLevel(logging.DEBUG)
