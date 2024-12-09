@@ -1,6 +1,5 @@
 import logging
 import socket
-from waitress import serve
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import Session
 from flask import Flask, request, jsonify
