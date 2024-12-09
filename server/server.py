@@ -1,5 +1,6 @@
 import logging
 import socket
+from waitress import serve
 from sqlalchemy import create_engine, func
 from sqlalchemy.orm import Session
 from flask import Flask, request, jsonify
@@ -14,7 +15,6 @@ class Application:
         self.logger = logging.getLogger(__name__)
         self.setup_routes()
         self.engine = create_engine(self.config.get('database.connection_string'))
-        logging.basicConfig(level=logging.INFO)
         self.logger.info("Server initialized")
     
     def run(self, server_ip: str = "", port: int = 0) -> int:
@@ -23,6 +23,7 @@ class Application:
             server_host = server_ip if len(server_ip) > 0 else self.config.get('web.host')
             server_port = port if port > 0 else self.config.get('web.port')
             self.logger.info(f"Starting Flask Server: {server_host}:{server_port}")
+            #serve(self.webserver, host=server_host, port=server_port, _quiet=True)
             self.webserver.run(debug=server_host, port=server_port)
         except Exception as e:
             self.logger.error(f"Error: {e}")
@@ -109,3 +110,5 @@ class Application:
             }, 500
                 
 
+app_instance = Application()
+app = app_instance.webserver
