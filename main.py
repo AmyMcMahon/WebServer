@@ -1,7 +1,6 @@
 import argparse
 import sys
 import logging
-from sqlalchemy import create_engine, func
 import client.client as client
 import server.server as server
 from config.config import Config
@@ -12,7 +11,7 @@ class MainApplication:
         self.config = Config("config.json")
         Logger.setUpLogger(self.config.get('log_path'))
         self.logger = logging.getLogger(__name__)
-        self.engine = create_engine(self.config.get('database.connection_string'))
+        
         self.logger.info("Main application initialized")
 
     def run(self) -> int:
@@ -36,10 +35,10 @@ class MainApplication:
             app_to_run = None
             if args.s:
                 self.logger.info("Running server")
-                app_to_run = server.Application()
+                return server.Application().run(server_ip, port)
             elif args.c:
                 self.logger.info("Running client")
-                app_to_run = client.Application()
+                return client.Application().run()
             # elif args.a:
             #     self.logger.info("Checking if server can be started.")
             #     app_to_run = server.Application()
