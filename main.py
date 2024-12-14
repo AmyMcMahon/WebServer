@@ -1,6 +1,7 @@
 import argparse
 import sys
 import logging
+import subprocess
 import client.client as client
 import server.server as server
 from config.config import Config
@@ -21,7 +22,7 @@ class MainApplication:
             group = parser.add_mutually_exclusive_group(required=True)
             group.add_argument('-s', action='store_true', help='server mode')
             group.add_argument('-c', action='store_true', help='client mode')
-            group.add_argument('-a', action='store_true', help='auto mode')
+            parser.add_argument("-test", action="store_true", help="Enable test mode")
             parser.add_argument("-serverip", type=str, help="IP address of the server", default=self.config.get('web.host'))
             parser.add_argument("-port", type=int, help="Port number for server/client", default=self.config.get('web.port'))
 
@@ -35,21 +36,13 @@ class MainApplication:
             app_to_run = None
             if args.s:
                 self.logger.info("Running server")
-                return server.Application().run(server_ip, port)
+                if args.test:
+                    return server.Application().run(server_ip, port)
+                else:
+                     subprocess.run(['gunicorn', '--bind', '0.0.0.0:8000', 'server.server:app'], check=True) 
             elif args.c:
                 self.logger.info("Running client")
                 return client.Application().run()
-            # elif args.a:
-            #     self.logger.info("Checking if server can be started.")
-            #     app_to_run = server.Application()
-            #     if app_to_run.port_is_available(server_ip, port):
-            #         self.logger.info("Server can be started. Running server.")
-            #     else:
-            #         self.logger.error("Server cannot be started. Running client.")
-            #         app_to_run = client.Application()
-            logging.info(f"Running application of type: {type(app_to_run)}")
-            return app_to_run.run()
-        
         except Exception as e:
             self.logger.error(f"Error: {e}")
             return 1
