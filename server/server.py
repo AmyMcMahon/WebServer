@@ -143,5 +143,5 @@ class Application:
                 'message': 'Data uploaded successfully'
             }, 201
 
-
+app = Application().webserver
         
