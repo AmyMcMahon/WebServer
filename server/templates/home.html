@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>Device Metrics Dashboard</h1>
+    </header>
+    <!-- Live Data Section -->
+    <section>
+      <h2>Live Data</h2>
+      <div id="devices">
+        {% for device in devices %}
+        <article class="device-box">
+          <h3>{{ device.name }}</h3>
+          {% for metric_type in metric_types %}
+          <div class="metric-box">
+            <h4>{{ metric_type.name }}</h4>
+            <p id="{{ device.id }}-{{ metric_type.id }}">Loading...</p>
+          {%endfor%}
+        </article>
+        {% endfor %}
+      </div>
+    </section>
+
+    <!-- Historical Data Section -->
+    <h2>Historical Data</h2>
+      {% for device_name, metrics in metrics_data.items() %}
+      <article>
+        <h3>{{ device_name }}</h3>
+          {% for metric_type_name, data_points in metrics.items() %}
+          <div>
+            <h4>{{ metric_type_name }}</h4>
+            <canvas id="history-{{ loop.index }}" width="400" height="200"></canvas>
+          </div>
+        {% endfor %}
+      </article>
+      {% endfor %}
+    </section>
+  </main>
+
+  <script>
+  document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM fully loaded and parsed');
+    const metricsData = JSON.parse('{{ metrics_data | tojson | safe }}');
+    console.log('Metrics data:', metricsData);
+    
+    Object.keys(metricsData).forEach((deviceName, deviceIndex) => {
+      console.log(`Processing device: ${deviceName}`);
+      const deviceMetrics = metricsData[deviceName];
+      
+      Object.keys(deviceMetrics).forEach((metricTypeName, metricIndex) => {
+        console.log(`Processing metric type: ${metricTypeName}`);
+        const dataPoints = deviceMetrics[metricTypeName];
+        const labels = dataPoints.map(point => {
+          const date = new Date(point.x * 1000); // Convert to milliseconds
+          return date.toISOString();  // Converts the date to ISO 8601 format
+        });
+        const ctx = document.getElementById(`history-${deviceIndex * Object.keys(deviceMetrics).length + metricIndex + 1}`).getContext('2d');
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: labels,
+            datasets: [{
+              label: metricTypeName,
+              data: dataPoints.map(point => point.y),
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 1,
+              fill: false
+            }]
+          },
+          options: {
+            scales: {
+              x: {
+                type: 'time',
+                time: {
+                  unit: 'minute'
+                }
+              },
+              y: {
+                beginAtZero: true
+              }
+            }
+          }
+        });
+      });
+    });
+  });
+  </script>
+</body>
+</html>
+
+

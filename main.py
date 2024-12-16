@@ -23,8 +23,8 @@ class MainApplication:
             group.add_argument('-s', action='store_true', help='server mode')
             group.add_argument('-c', action='store_true', help='client mode')
             parser.add_argument("-test", action="store_true", help="Enable test mode")
-            parser.add_argument("-serverip", type=str, help="IP address of the server", default=self.config.get('web.host'))
-            parser.add_argument("-port", type=int, help="Port number for server/client", default=self.config.get('web.port'))
+            parser.add_argument("-serverip", type=str, help="IP address of the server", default=self.config.get('web.development.host'))
+            parser.add_argument("-port", type=int, help="Port number for server/client", default=self.config.get('web.development.port'))
 
             args = parser.parse_args()
             self.logger.info(f"Arguments parsed: {args}")
@@ -41,8 +41,12 @@ class MainApplication:
                 else:
                      subprocess.run(['gunicorn', '--bind', '0.0.0.0:8000', 'server.server:app'], check=True) 
             elif args.c:
-                self.logger.info("Running client")
-                return client.Application().run()
+                if args.test:
+                    self.logger.info("Running client in test mode")
+                    return client.Application().run("dev")
+                else:
+                    self.logger.info("Running client")
+                    return client.Application().run("prod")
         except Exception as e:
             self.logger.error(f"Error: {e}")
             return 1
