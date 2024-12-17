@@ -4,15 +4,12 @@
             "development": {
               "host": "localhost",
               "port": 54545,
-              "connection_string": "postgresql://web_server_db_user:DHCYYl2mncS3StZOx6EEDfF1N2AKgEGs@dpg-ct6ssgrtq21c73ec1spg-a.oregon-postgres.render.com/web_server_db"
+              "connection_string": ""
             },
             "production": {
               "host": "0.0.0.0",
               "port": 8000,
-              "connection_string": "postgresql://web_server_db_user:DHCYYl2mncS3StZOx6EEDfF1N2AKgEGs@dpg-ct6ssgrtq21c73ec1spg-a/web_server_db"
+              "connection_string": ""
             }
-    },
-    "database": {
-        "connection_string": "postgresql://web_server_db_user:DHCYYl2mncS3StZOx6EEDfF1N2AKgEGs@dpg-ct6ssgrtq21c73ec1spg-a/web_server_db"
     }
-}
+  }
