@@ -17,9 +17,9 @@ class Application:
         self.webserver = Flask(__name__)
         self.logger = logging.getLogger(__name__)
         self.setup_routes()
-        load_dotenv()
         
         if "-test" in sys.argv:
+            load_dotenv()
             db_connection_string = os.getenv("EXTERNAL_DB")
             self.logger.info("Using development database connection string")
             self.logger.info(f"DB Connection String: {db_connection_string}")
@@ -27,7 +27,7 @@ class Application:
         else:
             db_connection_string = os.getenv("INTERNAL_DB")
             self.logger.info("Using production database connection string")
-            self.logger.info(f"DB Connection String: {db_connection_string}")
+            db_connection_string = os.getenv("DATABASE_URL")
 
         self.engine = create_engine(db_connection_string)
         self.logger.info("Server initialized")
