@@ -4,6 +4,7 @@ import logging
 import subprocess
 import client.client as client
 import server.server as server
+import client.client_live as client_live
 from config.config import Config
 from config.logger import Logger
 
@@ -22,6 +23,7 @@ class MainApplication:
             group = parser.add_mutually_exclusive_group(required=True)
             group.add_argument('-s', action='store_true', help='server mode')
             group.add_argument('-c', action='store_true', help='client mode')
+            group.add_argument('-live', action='store_true', help='live client mode')
             parser.add_argument("-test", action="store_true", help="Enable test mode")
             parser.add_argument("-serverip", type=str, help="IP address of the server", default=self.config.get('web.development.host'))
             parser.add_argument("-port", type=int, help="Port number for server/client", default=self.config.get('web.development.port'))
@@ -47,6 +49,8 @@ class MainApplication:
                 else:
                     self.logger.info("Running client")
                     return client.Application().run("prod")
+            elif args.live:
+                return client_live.Application().run()
         except Exception as e:
             self.logger.error(f"Error: {e}")
             return 1

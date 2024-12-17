@@ -6,6 +6,7 @@
   <title>Dashboard</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+  <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
 </head>
 <body>
   <main class="container">
@@ -16,16 +17,10 @@
     <section>
       <h2>Live Data</h2>
       <div id="devices">
-        {% for device in devices %}
-        <article class="device-box">
-          <h3>{{ device.name }}</h3>
-          {% for metric_type in metric_types %}
-          <div class="metric-box">
-            <h4>{{ metric_type.name }}</h4>
-            <p id="{{ device.id }}-{{ metric_type.id }}">Loading...</p>
-          {%endfor%}
-        </article>
-        {% endfor %}
+        <h4>CPU usage</h4>
+        <p id="cpuUsage">{{ cpuUsage }}</p>
+        <h4>Running Threads</h4>
+        <p id="runningThreads">{{ threads }}</p>
       </div>
     </section>
 
@@ -46,54 +41,81 @@
   </main>
 
   <script>
-  document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM fully loaded and parsed');
-    const metricsData = JSON.parse('{{ metrics_data | tojson | safe }}');
-    console.log('Metrics data:', metricsData);
-    
-    Object.keys(metricsData).forEach((deviceName, deviceIndex) => {
-      console.log(`Processing device: ${deviceName}`);
-      const deviceMetrics = metricsData[deviceName];
+    console.log('Loading the dashboard script');
+    const socket = io.connect("{{ socket_url }}");
+
+    socket.on('metrics', (data) => {
+      console.log('Received metrics data:', data);
+      updateLiveData(data);
+    });
+
+    document.addEventListener('DOMContentLoaded', function() {
+      console.log('DOM fully loaded and parsed');
+      const metricsData = JSON.parse('{{ metrics_data | tojson | safe }}');
+      console.log('Metrics data:', metricsData);
       
-      Object.keys(deviceMetrics).forEach((metricTypeName, metricIndex) => {
-        console.log(`Processing metric type: ${metricTypeName}`);
-        const dataPoints = deviceMetrics[metricTypeName];
-        const labels = dataPoints.map(point => {
-          const date = new Date(point.x * 1000); // Convert to milliseconds
-          return date.toISOString();  // Converts the date to ISO 8601 format
-        });
-        const ctx = document.getElementById(`history-${deviceIndex * Object.keys(deviceMetrics).length + metricIndex + 1}`).getContext('2d');
-        new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: labels,
-            datasets: [{
-              label: metricTypeName,
-              data: dataPoints.map(point => point.y),
-              borderColor: 'rgba(75, 192, 192, 1)',
-              borderWidth: 1,
-              fill: false
-            }]
-          },
-          options: {
-            scales: {
-              x: {
-                type: 'time',
-                time: {
-                  unit: 'minute'
+      Object.keys(metricsData).forEach((deviceName, deviceIndex) => {
+        console.log(`Processing device: ${deviceName}`);
+        const deviceMetrics = metricsData[deviceName];
+        
+        Object.keys(deviceMetrics).forEach((metricTypeName, metricIndex) => {
+          console.log(`Processing metric type: ${metricTypeName}`);
+          const dataPoints = deviceMetrics[metricTypeName];
+          const labels = dataPoints.map(point => {
+            const date = new Date(point.x * 1000); // Convert to milliseconds
+            return date.toISOString();  // Converts the date to ISO 8601 format
+          });
+          const ctx = document.getElementById(`history-${deviceIndex * Object.keys(deviceMetrics).length + metricIndex + 1}`).getContext('2d');
+          new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: labels,
+              datasets: [{
+                label: metricTypeName,
+                data: dataPoints.map(point => point.y),
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1,
+                fill: false
+              }]
+            },
+            options: {
+              scales: {
+                x: {
+                  type: 'time',
+                  time: {
+                    unit: 'minute'
+                  }
+                },
+                y: {
+                  beginAtZero: true
                 }
-              },
-              y: {
-                beginAtZero: true
               }
             }
-          }
+          });
         });
       });
     });
-  });
+
+    function updateLiveData(data) {
+      const parsedData = JSON.parse(JSON.parse(data)); 
+        const devices = parsedData.devices;
+        devices.forEach((device) => {
+          if (device.type === 'laptop') {
+            console.log('Device:', device);
+
+            // Extract the CPU usage and running threads metrics
+            const cpuUsage = device.metric.find(m => m.name === 'cpu_usage_percent')?.value;
+            const runningThreads = device.metric.find(m => m.name === 'running_threads')?.value;
+
+            console.log('CPU Usage:', cpuUsage);
+            console.log('Running Threads:', runningThreads);
+
+            // Update the live data section
+            document.getElementById('cpuUsage').textContent = cpuUsage;
+            document.getElementById('runningThreads').textContent = runningThreads;
+          }
+        });
+    }
   </script>
 </body>
 </html>
-
-

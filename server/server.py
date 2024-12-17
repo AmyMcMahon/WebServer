@@ -6,6 +6,9 @@ from sqlalchemy import create_engine, func
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session, joinedload
 from flask import Flask, request, jsonify, render_template
+from flask_cors import CORS
+from flask_socketio import SocketIO,send, emit,  join_room, leave_room
+from flask_socketio import SocketIO, emit
 from config.config import Config
 from config.logger import Logger
 from dotenv import load_dotenv
@@ -15,8 +18,12 @@ class Application:
     def __init__(self):
         self.config = Config("config.json")
         self.webserver = Flask(__name__)
+        CORS(self.webserver,resources={r"/*":{"origins":"*"}})
+        self.socketio = SocketIO(self.webserver,cors_allowed_origins="*")
+        self.connected_clients = set()
         self.logger = logging.getLogger(__name__)
         self.setup_routes()
+        self.setup_socketio_handlers()
         
         if "-test" in sys.argv:
             load_dotenv()
@@ -31,7 +38,7 @@ class Application:
 
         self.engine = create_engine(db_connection_string)
         self.logger.info("Server initialized")
-    
+  
     def run(self, server_ip: str = "", port: int = 0) -> int:
         try:
             self.logger.info("Server running...")
@@ -51,14 +58,40 @@ class Application:
         # self.webserver.route("/devices", methods=['GET', 'POST'])(self.handle_devices)
         self.webserver.route("/metrics", methods=['GET'])(self.get_metrics)
         self.webserver.route("/esp_metrics", methods=['GET', 'POST'])(self.get_esp)
-        self.webserver.route("/live.metrics", methods=['GET'])(self.get_live_metrics)
+        #self.webserver.route("/live.metrics", methods=['GET'])(self.get_live_metrics)
+
+    def setup_socketio_handlers(self):
+        """Setup Socket.IO event handlers."""
+        @self.socketio.on('connect')
+        def handle_connect():
+            self.logger.info(f"Client connected: {request.sid}")
+            self.connected_clients.add(request.sid)
+            emit('message', 'Hello from the server!')
+
+        @self.socketio.on('disconnect')
+        def handle_disconnect():
+            self.logger.info(f"Client disconnected: {request.sid}")
+            self.connected_clients.discard(request.sid)
+
+        @self.socketio.on('message')
+        def handle_message(message):
+            self.logger.info(f"Received message: {message}")
+            send("Message received")
+
+        @self.socketio.on("metrics")
+        def handle_metrics(data):
+            self.logger.info(f"Received metrics: {data}")
+            emit('metrics',data, broadcast=True)
+            self.logger.info(f'connected_clients: {list(self.connected_clients)}')
+            self.logger.info("Broadcasted metrics to all clients")
 
     def hello_world(self):
         self.logger.info("Hello, World! route called")
         devices = self.get_devices()
         metrics_data = self.get_metrics()
         self.logger.info("data gathered")
-        return render_template("home.html", devices=devices, metrics_data=metrics_data)
+        server_url = request.host_url
+        return render_template("home.html", devices=devices, metrics_data=metrics_data, connected_clients=self.connected_clients, server_url=server_url, cpuUsage = 0, threads = 0)
 
     def get_devices(self):
         """Get devices from the database."""
@@ -87,9 +120,7 @@ class Application:
                 data[device_name][metric_type_name] = []
             data[device_name][metric_type_name].append({"x": timestamp, "y": value})
         return data
-    
-    def get_live_metrics(self):
-        return {"hello": "world"}   
+      
     
     def get_metric_types(self):
         self.logger.info("Get metric types route called")
