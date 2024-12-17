@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session, joinedload
 from flask import Flask, request, jsonify, render_template
 from config.config import Config
 from config.logger import Logger
+from dotenv import load_dotenv
 from db import *
 
 class Application:
@@ -16,13 +17,17 @@ class Application:
         self.webserver = Flask(__name__)
         self.logger = logging.getLogger(__name__)
         self.setup_routes()
+        load_dotenv()
         
         if "-test" in sys.argv:
-            db_connection_string = self.config.get("web.development.connection_string")
+            db_connection_string = os.getenv("EXTERNAL_DB")
             self.logger.info("Using development database connection string")
+            self.logger.info(f"DB Connection String: {db_connection_string}")
+            self.logger.info(f"type of db_connection_string: {type(db_connection_string)}")
         else:
-            db_connection_string = self.config.get("web.production.connection_string")
+            db_connection_string = os.getenv("INTERNAL_DB")
             self.logger.info("Using production database connection string")
+            self.logger.info(f"DB Connection String: {db_connection_string}")
 
         self.engine = create_engine(db_connection_string)
         self.logger.info("Server initialized")
@@ -46,6 +51,7 @@ class Application:
         # self.webserver.route("/devices", methods=['GET', 'POST'])(self.handle_devices)
         self.webserver.route("/metrics", methods=['GET'])(self.get_metrics)
         self.webserver.route("/esp_metrics", methods=['GET', 'POST'])(self.get_esp)
+        self.webserver.route("/live.metrics", methods=['GET'])(self.get_live_metrics)
 
     def hello_world(self):
         self.logger.info("Hello, World! route called")
@@ -79,11 +85,11 @@ class Application:
                 data[device_name] = {}
             if metric_type_name not in data[device_name]:
                 data[device_name][metric_type_name] = []
-
-            # Append each metric's timestamp and value
             data[device_name][metric_type_name].append({"x": timestamp, "y": value})
         return data
-
+    
+    def get_live_metrics(self):
+        return {"hello": "world"}   
     
     def get_metric_types(self):
         self.logger.info("Get metric types route called")

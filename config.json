@@ -3,13 +3,11 @@
     "web": {
             "development": {
               "host": "localhost",
-              "port": 54545,
-              "connection_string": ""
+              "port": 54545
             },
             "production": {
               "host": "0.0.0.0",
-              "port": 8000,
-              "connection_string": ""
+              "port": 8000
             }
     }
   }
