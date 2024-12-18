@@ -39,15 +39,12 @@ class BeetleMetric:
             if line.startswith('{') and line.endswith('}'):
                 try:
                     data_collected = json.loads(line)
-                    # Process the mic_value and second_metric as needed
-                    print(f"Mic Value: {data_collected['mic_value']}, Metric: {data_collected['second_metric']}")
-                    #self.close()
                     data = {
                         "devices": [
                             {
                                 "name": self.name,
                                 "type": "firebeetle",
-                                "time": int(time.time()),  # Current time as a Unix timestamp
+                                "time": int(time.time()),  
                                 "metric": [
                                     {
                                         "name": "sound_level",
@@ -66,10 +63,11 @@ class BeetleMetric:
                     self.logger.info("Metrics collected successfully: %s", data)
                     return json.dumps(data)
                 except json.JSONDecodeError:
-                    # Handle any non-JSON lines gracefully
+                    self.logger.error("Error decoding JSON data.")
                     pass
         except Exception as e:
             self.logger.error(f"Error reading from serial port: {e}")
+            self.close()
             return None
 
     def close(self):

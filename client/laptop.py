@@ -25,7 +25,7 @@ class LaptopMetrics:
                     {
                         "name": self.name,
                         "type": "laptop",
-                        "time": int(time.time()),  # Current time as a Unix timestamp
+                        "time": int(time.time()),  
                         "metric": [
                             {
                                 "name": "cpu_usage_percent",
@@ -44,7 +44,7 @@ class LaptopMetrics:
             
             # Log and return the data
             self.logger.info("Metrics collected successfully: %s", data)
-            return json.dumps(data)  # Return as JSON string
+            return json.dumps(data)  
         except Exception as e:
             self.logger.error(f"Error collecting metrics: {e}")
             return None
