@@ -30,8 +30,8 @@ class Application:
             db_connection_string = os.getenv("EXTERNAL_DB")
             self.logger.info("Using development database connection string")
         else:
-            db_connection_string = os.getenv("INTERNAL_DB")
-            self.logger.info("Using development database connection string")
+            db_connection_string = os.environ.get("INTERNAL_DB")
+            self.logger.info("Using prod database connection string")
 
         self.engine = create_engine(db_connection_string)
         self.logger.info("Server initialized")
