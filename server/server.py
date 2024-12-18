@@ -32,7 +32,7 @@ class Application:
             self.logger.info(f"DB Connection String: {db_connection_string}")
             self.logger.info(f"type of db_connection_string: {type(db_connection_string)}")
         else:
-            db_connection_string = os.getenv("INTERNAL_DB")
+            db_connection_string = os.environ.get(env_var)
             self.logger.info("Using production database connection string")
             db_connection_string = os.getenv("DATABASE_URL")
 
