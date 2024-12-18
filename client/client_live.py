@@ -18,13 +18,13 @@ class Application:
             host = self.config.get('web.development.host')
             port = self.config.get('web.development.port')
         else:
-            host = self.config.get('web.production.host')
-            port = self.config.get('web.production.port')
+            host = self.config.get('web.development.host')
+            port = self.config.get('web.development.port')
         self.url = f"http://{host}:{port}"
         self.logger.info(f"Server URL: {self.url}")
 
         # SocketIO client setup
-        self.sio = socketio.Client()
+        self.sio = socketio.Client(logger=True, engineio_logger=True)
 
         @self.sio.event
         def connect():
