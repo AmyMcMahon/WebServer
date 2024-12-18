@@ -29,11 +29,9 @@ class Application:
             load_dotenv()
             db_connection_string = os.getenv("EXTERNAL_DB")
             self.logger.info("Using development database connection string")
-            self.logger.info(f"DB Connection String: {db_connection_string}")
-            self.logger.info(f"type of db_connection_string: {type(db_connection_string)}")
         else:
-            self.logger.info("Using production database connection string")
-            db_connection_string = "postgresql://web_server_db_user:DHCYYl2mncS3StZOx6EEDfF1N2AKgEGs@dpg-ct6ssgrtq21c73ec1spg-a.oregon-postgres.render.com/web_server_db"
+           db_connection_string = os.getenv("INTERNAL_DB")
+            self.logger.info("Using development database connection string")
 
         self.engine = create_engine(db_connection_string)
         self.logger.info("Server initialized")
