@@ -26,16 +26,12 @@ class Application:
         self.setup_routes()
         self.setup_socketio_handlers()
         
-        if "-test" in sys.argv:
+        try:
+            from dotenv import load_dotenv
             load_dotenv()
-            db_connection_string = os.getenv("EXTERNAL_DB")
-            self.logger.info("Using development database connection string")
-        else:
-            load_dotenv()
-           # db_connection_string = os.environ.get('DATABASE_URL')
-            load_dotenv()
-            db_connection_string = os.getenv("INTERNAL_DB")
-            self.logger.info("Using prod database connection string")
+            self.engine = create_engine(os.getenv("EXTERNAL_DB"))
+        except Exception as e:
+            self.engine = create_engine(os.environ.get("EXTERNAL_DB"))
 
         self.engine = create_engine(db_connection_string)
         self.logger.info("Server initialized")
