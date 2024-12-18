@@ -22,7 +22,7 @@ class Application:
         self.config = Config("config.json")
         self.webserver = Flask(__name__)
         CORS(self.webserver,resources={r"/*":{"origins":"*"}})
-        self.socketio = SocketIO(self.webserver,cors_allowed_origins="*")
+        self.socketio = SocketIO(self.webserver,cors_allowed_origins="*", async_mode='eventlet')
         self.connected_clients = set()
         self.logger = logging.getLogger(__name__)
         self.setup_routes()

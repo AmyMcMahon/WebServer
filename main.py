@@ -41,7 +41,7 @@ class MainApplication:
                 if args.test:
                     return server.Application().run(server_ip, port)
                 else:
-                    subprocess.run(['gunicorn', '--bind', '0.0.0.0:8000', 'server.server:app', '--worker-class', 'eventlet','-w', '1'], check=True) 
+                    subprocess.run(['gunicorn', '-k', 'eventlet','--worker-class', 'eventlet', '--bind', '0.0.0.0:8000', 'server.server:app'], check=True) 
             elif args.c:
                 if args.test:
                     self.logger.info("Running client in test mode")
