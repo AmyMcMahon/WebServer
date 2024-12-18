@@ -1,6 +1,3 @@
-import eventlet
-eventlet.monkey_patch()
-
 import logging
 import socket
 import sys
@@ -12,7 +9,6 @@ from sqlalchemy.orm import Session, joinedload
 from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 from flask_socketio import SocketIO,send, emit,  join_room, leave_room
-from flask_socketio import SocketIO, emit
 from config.config import Config
 from config.logger import Logger
 from db import *
@@ -47,7 +43,7 @@ class Application:
             server_port = port if port > 0 else self.config.get('web.development.port')
             self.logger.info(f"Starting Flask Server: {server_host}:{server_port}")
             #serve(self.webserver, host=server_host, port=server_port, _quiet=True)
-            self.webserver.run(debug=server_host, port=server_port)
+            self.socketio.run(self.webserver, host=server_host, port=server_port)
         except Exception as e:
             self.logger.error(f"Error: {e}")
             return 1
