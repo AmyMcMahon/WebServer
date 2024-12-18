@@ -4,6 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from flask_sqlalchemy import SQLAlchemy
 
+# Create a new declarative base
 Base = declarative_base()
 metadata = Base.metadata
 

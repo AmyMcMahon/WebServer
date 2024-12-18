@@ -18,6 +18,7 @@ from db import *
 
 class Application:
     def __init__(self):
+        """ Initialize the application. """
         self.config = Config("config.json")
         self.webserver = Flask(__name__)
         CORS(self.webserver,resources={r"/*":{"origins":"*"}})
@@ -27,6 +28,7 @@ class Application:
         self.setup_routes()
         self.setup_socketio_handlers()
         
+        #load in env variables depending on environment
         try:
             from dotenv import load_dotenv
             load_dotenv()
@@ -40,12 +42,12 @@ class Application:
         self.logger.info("Server initialized")
   
     def run(self, server_ip: str = "", port: int = 0) -> int:
+        """Run the application."""
         try:
             self.logger.info("Server running...")
             server_host = server_ip if len(server_ip) > 0 else self.config.get('web.development.host')
             server_port = port if port > 0 else self.config.get('web.development.port')
             self.logger.info(f"Starting Flask Server: {server_host}:{server_port}")
-            #serve(self.webserver, host=server_host, port=server_port, _quiet=True)
             self.socketio.run(self.webserver, host=server_host, port=server_port)
         except Exception as e:
             self.logger.error(f"Error: {e}")
@@ -55,10 +57,7 @@ class Application:
         """Setup the routes for the application."""
         self.webserver.route("/")(self.hello_world)
         self.webserver.route("/upload_metrics", methods=['GET', 'POST'])(self.upload_metrics)
-        # self.webserver.route("/devices", methods=['GET', 'POST'])(self.handle_devices)
         self.webserver.route("/metrics", methods=['GET'])(self.get_metrics)
-        self.webserver.route("/esp_metrics", methods=['GET', 'POST'])(self.get_esp)
-        #self.webserver.route("/live.metrics", methods=['GET'])(self.get_live_metrics)
 
     def setup_socketio_handlers(self):
         """Setup Socket.IO event handlers."""
@@ -73,11 +72,6 @@ class Application:
             self.logger.info(f"Client disconnected: {request.sid}")
             self.connected_clients.discard(request.sid)
 
-        @self.socketio.on('message')
-        def handle_message(message):
-            self.logger.info(f"Received message: {message}")
-            send("Message received")
-
         @self.socketio.on("metrics")
         def handle_metrics(data):
             self.logger.info(f"Received metrics: {data}")
@@ -86,6 +80,7 @@ class Application:
             self.logger.info("Broadcasted metrics to all clients")
 
     def hello_world(self):
+        """main route route."""
         self.logger.info("Hello, World! route called")
         devices = self.get_devices()
         metrics_data = self.get_metrics()
@@ -102,6 +97,7 @@ class Application:
         return devices
 
     def get_metrics(self):
+        """Get metrics from the database."""
         self.logger.info("Fetching metrics from the database")
         session = Session(self.engine)
         metrics = (session.query(Metric).options(joinedload(Metric.metric_type).joinedload(MetricType.device)).all())
@@ -120,37 +116,15 @@ class Application:
                 data[device_name][metric_type_name] = []
             data[device_name][metric_type_name].append({"x": timestamp, "y": value})
         return data
-      
-    
-    def get_metric_types(self):
-        self.logger.info("Get metric types route called")
-        session = Session(self.engine)
-        metric_types = session.query(MetricType).all()
-        session.close()
-        return metric_types
-
-    def get_esp(self):
-        self.logger.info("ESP data route called")
-        data = request.get_json()
-        mic_value = data.get("mic_value")
-        second_metric = data.get("second_metric")
-
-        if mic_value is not None and second_metric is not None:
-            self.logger.info(f"Received mic_value: {mic_value}, second_metric: {second_metric}")
-            # Process the metrics as needed
-            
-        else:
-            self.logger.error("Missing mic_value or second_metric in the received data")
-            return jsonify({"status": "error", "message": "Invalid data format"}), 400
-
-        return jsonify({"status": "success", "message": "Data received successfully"}), 200
 
     def upload_metrics(self):
+        """Upload metrics to the database."""
         self.logger.info("Upload snapshot route called")
         data = request.get_json()
         self.logger.info("Received snapshot: %s", data)
         session = Session(self.engine)
 
+        # parse JSON data and insert into database
         for device_data in data["devices"]:
             self.logger.info("Processing device %s", device_data["name"])
             db_device = session.query(Device).filter(Device.name == device_data["name"]).first()

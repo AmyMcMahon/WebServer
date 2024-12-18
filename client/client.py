@@ -10,11 +10,13 @@ from client.beetle import BeetleMetric
 
 class Application:
     def __init__(self):
+        """ Initialize the Application class """
         self.config = Config("config.json")
         self.logger = logging.getLogger(__name__)
         self.logger.info("Client initialized")
     
     def run(self, mode, metricType) -> int:
+        """ Run the client application """
         try:
             self.logger.info("Client running...")
             self.collect_metrics(mode, metricType)
@@ -23,6 +25,7 @@ class Application:
             return 1
     
     def collect_metrics(self, mode, metricType):
+        """ Collect metrics from the client device """
         self.logger.info("Collecting metrics...")
         if mode == "prod":
             server_url = f"http://{self.config.get('web.production.host')}:{self.config.get('web.production.port')}/upload_metrics"
@@ -31,6 +34,7 @@ class Application:
         headers = {'Content-Type': 'application/json'}
 
         try:
+            # Collect metrics based on the metric type
             if metricType == "laptop":
                 interval = 10
                 last_run_time = datetime.now() - timedelta(seconds=interval)
@@ -38,6 +42,7 @@ class Application:
                 while(True):
                     time.sleep(0.5)
                     current_time = datetime.now()
+                    # logic executes after 10 seconds regardless of the time it takes to execute
                     if (current_time - last_run_time).total_seconds() >= interval:
                         self.logger.info("%s second timer elapsed, executing timed logic...", interval)
                         last_run_time = current_time
@@ -46,6 +51,7 @@ class Application:
                     if metrics is None:
                         continue    
 
+                    # Send metrics to the server
                     self.logger.info("Sending snapshot to server at %s with headers %s and json %s", server_url, headers, metrics)
                     response = requests.post(server_url, data=metrics, headers=headers)
                     
@@ -58,6 +64,7 @@ class Application:
                 self.logger.info("Application completed successfully")
                 return 0
             
+            # same for firebeetle metrics
             elif metricType == "beetle":
                 interval = 100
                 last_run_time = datetime.now() - timedelta(seconds=interval)

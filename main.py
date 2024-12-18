@@ -13,6 +13,7 @@ from config.logger import Logger
 
 class MainApplication:
     def __init__(self):
+        """ Initialize the main application. """
         self.config = Config("config.json")
         Logger.setUpLogger(self.config.get('log_path'))
         self.logger = logging.getLogger(__name__)
@@ -21,7 +22,10 @@ class MainApplication:
 
     def run(self) -> int:
         try:
+            """ Run the main application. """
             self.logger.info("Main application running...")
+
+            # set up different argument for the different modes
             parser = argparse.ArgumentParser(description='Run application in server, client or auto modes') 
             group = parser.add_mutually_exclusive_group(required=True)
             group.add_argument('-s', action='store_true', help='server mode')
@@ -40,6 +44,7 @@ class MainApplication:
             port = args.port 
             self.logger.info(f"Params given: server IP: {server_ip}, port: {port}. Config will backfill blanks.")
 
+            # set the app to run based on the arguments
             app_to_run = None
             if args.s:
                 self.logger.info("Running server")
@@ -68,7 +73,6 @@ class MainApplication:
             self.logger.error(f"Error: {e}")
             return 1
         
-
 def main() -> int:
     """Entry point for the application."""
     app = MainApplication()
