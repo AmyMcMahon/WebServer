@@ -12,7 +12,6 @@ from flask_socketio import SocketIO,send, emit,  join_room, leave_room
 from flask_socketio import SocketIO, emit
 from config.config import Config
 from config.logger import Logger
-from dotenv import load_dotenv
 from db import *
 
 class Application:
@@ -27,6 +26,7 @@ class Application:
         self.setup_socketio_handlers()
         
         try:
+            from dotenv import load_dotenv
             load_dotenv()
             self.logger.info("Loaded environment variables - dotenv")
             self.logger.info(f"Loaded environment variables: {os.getenv('EXTERNAL_DB')}")
@@ -35,7 +35,6 @@ class Application:
             self.logger.info("Loaded environment variables : {os.getenv('EXTERNAL_DB')}")
             self.engine = create_engine(os.environ.get("EXTERNAL_DB"))
 
-        self.engine = create_engine(db_connection_string)
         self.logger.info("Server initialized")
   
     def run(self, server_ip: str = "", port: int = 0) -> int:
