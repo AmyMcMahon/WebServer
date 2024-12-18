@@ -19,8 +19,10 @@
       <div id="devices">
         <h4>CPU usage</h4>
         <p id="cpuUsage">{{ cpuUsage }}</p>
+        <canvas id="cpu-usage-gauge" width="400" height="200"></canvas>
         <h4>Running Threads</h4>
         <p id="runningThreads">{{ threads }}</p>
+        <canvas id="running-threads-gauge" width="400" height="200"></canvas>
       </div>
     </section>
 
@@ -61,40 +63,87 @@
         Object.keys(deviceMetrics).forEach((metricTypeName, metricIndex) => {
           console.log(`Processing metric type: ${metricTypeName}`);
           const dataPoints = deviceMetrics[metricTypeName];
-          const labels = dataPoints.map(point => {
-            const date = new Date(point.x * 1000); // Convert to milliseconds
-            return date.toISOString();  // Converts the date to ISO 8601 format
-          });
+          const labels = dataPoints.map((point, index) => index % 100 === 0 ? index : '');
           const ctx = document.getElementById(`history-${deviceIndex * Object.keys(deviceMetrics).length + metricIndex + 1}`).getContext('2d');
-          new Chart(ctx, {
+            new Chart(ctx, {
             type: 'line',
             data: {
               labels: labels,
               datasets: [{
-                label: metricTypeName,
-                data: dataPoints.map(point => point.y),
-                borderColor: 'rgba(75, 192, 192, 1)',
-                borderWidth: 1,
-                fill: false
+              label: metricTypeName,
+              data: dataPoints.map(point => point.y),
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 1,
+              fill: false,
+              pointRadius: 0
               }]
             },
             options: {
               scales: {
-                x: {
-                  type: 'time',
-                  time: {
-                    unit: 'minute'
-                  }
-                },
-                y: {
-                  beginAtZero: true
-                }
+              x: {
+                beginAtZero: true
+              },
+              y: {
+                beginAtZero: true
+              }
               }
             }
+            });
           });
-        });
+          });
+
+      // Create the CPU Usage gauge chart
+      console.log('Creating the CPU Usage gauge chart');
+      const cpuUsageGaugeCtx = document.getElementById('cpu-usage-gauge').getContext('2d');
+      window.cpuUsageGauge = new Chart(cpuUsageGaugeCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['CPU Usage'],
+          datasets: [{
+            label: 'CPU Usage',
+            data: [0, 100],
+            backgroundColor: ['rgba(255, 99, 132, 0.2)'],
+            borderColor: ['rgba(255, 99, 132, 1)'],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            },
+            x:{ 
+              beginAtZero: true}
+          }
+        }
       });
+      console.log('CPU Usage Gauge:');
+
+      // Create the Running Threads gauge chart
+      const runningThreadsGaugeCtx = document.getElementById('running-threads-gauge').getContext('2d');
+      window.runningThreadsGauge = new Chart(runningThreadsGaugeCtx, {
+        type: 'doughnut',
+        data: {
+          labels: ['Running Threads'],
+          datasets: [{
+            label: 'Running Threads',
+            data: [0, 6400],
+            backgroundColor: ['rgba(54, 162, 235, 0.2)'],
+            borderColor: ['rgba(54, 162, 235, 1)'],
+            borderWidth: 1
+          }]
+        },
+        options: {
+          scales: {
+            y: {
+              beginAtZero: true
+            }
+          }
+        }
+      });
+      console.log('Running Threads Gauge:');
     });
+
 
     function updateLiveData(data) {
       const parsedData = JSON.parse(JSON.parse(data)); 
@@ -113,6 +162,18 @@
             // Update the live data section
             document.getElementById('cpuUsage').textContent = cpuUsage;
             document.getElementById('runningThreads').textContent = runningThreads;
+
+            // Update the CPU Usage gauge chart
+            console.log('CPU Usage Gauge:', window.cpuUsageGauge);
+            window.cpuUsageGauge.data.datasets[0].data = [cpuUsage, 100 - cpuUsage];
+            console.log('CPU Usage Gauge:', window.cpuUsageGauge);
+            window.cpuUsageGauge.update();
+
+            // Update the Running Threads gauge chart
+            console.log('Running Threads Gauge:', window.runningThreadsGauge);
+            window.runningThreadsGauge.data.datasets[0].data = [runningThreads, 6400 - runningThreads];
+            console.log('Running Threads Gauge:', window.runningThreadsGauge);
+            window.runningThreadsGauge.update();
           }
         });
     }

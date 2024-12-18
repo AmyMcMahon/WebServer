@@ -33,7 +33,7 @@ class Application:
             self.logger.info(f"type of db_connection_string: {type(db_connection_string)}")
         else:
             self.logger.info("Using production database connection string")
-            db_connection_string = os.getenv("DATABASE_URL")
+            db_connection_string = "postgresql://web_server_db_user:DHCYYl2mncS3StZOx6EEDfF1N2AKgEGs@dpg-ct6ssgrtq21c73ec1spg-a.oregon-postgres.render.com/web_server_db"
 
         self.engine = create_engine(db_connection_string)
         self.logger.info("Server initialized")
