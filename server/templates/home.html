@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dashboard</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@1/css/pico.min.css">
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.socket.io/4.0.0/socket.io.min.js"></script>
 </head>
 <body>
@@ -17,11 +17,9 @@
     <section>
       <h2>Live Data</h2>
       <div id="devices">
-        <h4>CPU usage</h4>
-        <p id="cpuUsage">{{ cpuUsage }}</p>
+        <h4>CPU usage - <span id="cpuUsage">{{ cpuUsage }}</span></h4>
         <canvas id="cpu-usage-gauge" width="400" height="200"></canvas>
-        <h4>Running Threads</h4>
-        <p id="runningThreads">{{ threads }}</p>
+        <h4>Running Threads - <span id="runningThreads">{{ threads }}</span></h4>
         <canvas id="running-threads-gauge" width="400" height="200"></canvas>
       </div>
     </section>
@@ -102,18 +100,23 @@
           datasets: [{
             label: 'CPU Usage',
             data: [0, 100],
-            backgroundColor: ['rgba(255, 99, 132, 0.2)'],
-            borderColor: ['rgba(255, 99, 132, 1)'],
-            borderWidth: 1
+            backgroundColor: ['rgba(98, 252, 3, 0.2)', 'rgba(0,0,0,0.2)'],
+            borderColor: ['rgba(69, 171, 7, 0.2)', 'rgba(0,0,0,0.2)'],
+            borderWidth: 1,
+            cutout: '70%',
+            circumference: 180,
+            rotation: 270
           }]
         },
         options: {
-          scales: {
-            y: {
-              beginAtZero: true
+          aspectRatio: 2,
+          plugins: {
+            legend: {
+              display: false
             },
-            x:{ 
-              beginAtZero: true}
+            tooltip: {
+              enabled: false
+            }
           }
         }
       });
@@ -128,15 +131,22 @@
           datasets: [{
             label: 'Running Threads',
             data: [0, 6400],
-            backgroundColor: ['rgba(54, 162, 235, 0.2)'],
-            borderColor: ['rgba(54, 162, 235, 1)'],
-            borderWidth: 1
+            backgroundColor: ['rgba(98, 252, 3, 0.2)', 'rgba(0,0,0,0.2)'],
+            borderColor: ['rgba(69, 171, 7, 0.2)', 'rgba(0,0,0,0.2)'],
+            borderWidth: 1,
+            cutout: '70%',
+            circumference: 180,
+            rotation: 270
           }]
         },
         options: {
-          scales: {
-            y: {
-              beginAtZero: true
+          aspectRatio: 2,
+          plugins: {
+            legend: {
+              display: false
+            },
+            tooltip: {
+              enabled: false
             }
           }
         }
@@ -164,15 +174,11 @@
             document.getElementById('runningThreads').textContent = runningThreads;
 
             // Update the CPU Usage gauge chart
-            console.log('CPU Usage Gauge:', window.cpuUsageGauge);
             window.cpuUsageGauge.data.datasets[0].data = [cpuUsage, 100 - cpuUsage];
-            console.log('CPU Usage Gauge:', window.cpuUsageGauge);
             window.cpuUsageGauge.update();
 
             // Update the Running Threads gauge chart
-            console.log('Running Threads Gauge:', window.runningThreadsGauge);
             window.runningThreadsGauge.data.datasets[0].data = [runningThreads, 6400 - runningThreads];
-            console.log('Running Threads Gauge:', window.runningThreadsGauge);
             window.runningThreadsGauge.update();
           }
         });

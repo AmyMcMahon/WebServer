@@ -32,7 +32,9 @@ class Application:
             self.logger.info("Using development database connection string")
         else:
             load_dotenv()
-            db_connection_string = os.environ.get('DATABASE_URL')
+           # db_connection_string = os.environ.get('DATABASE_URL')
+            load_dotenv()
+            db_connection_string = os.getenv("INTERNAL_DB")
             self.logger.info("Using prod database connection string")
 
         self.engine = create_engine(db_connection_string)
