@@ -29,8 +29,10 @@ class Application:
         try:
             from dotenv import load_dotenv
             load_dotenv()
+            self.logger.info("Loaded environment variables - dotenv")
             self.engine = create_engine(os.getenv("EXTERNAL_DB"))
         except Exception as e:
+            self.logger.error(f"Error loading environment variables: {e}")
             self.engine = create_engine(os.environ.get("EXTERNAL_DB"))
 
         self.engine = create_engine(db_connection_string)
