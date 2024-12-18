@@ -27,6 +27,8 @@ class MainApplication:
             group.add_argument('-s', action='store_true', help='server mode')
             group.add_argument('-c', action='store_true', help='client mode')
             group.add_argument('-live', action='store_true', help='live client mode')
+            parser.add_argument('-laptop', action='store_true', help='laptop mode')
+            parser.add_argument('-beetle', action='store_true', help='beetle mode')
             parser.add_argument("-test", action="store_true", help="Enable test mode")
             parser.add_argument("-serverip", type=str, help="IP address of the server", default=self.config.get('web.development.host'))
             parser.add_argument("-port", type=int, help="Port number for server/client", default=self.config.get('web.development.port'))
@@ -47,11 +49,19 @@ class MainApplication:
                     subprocess.run(['gunicorn', '-k', 'eventlet','--worker-class', 'eventlet', '--bind', '0.0.0.0:8000', 'server.server:app'], check=True) 
             elif args.c:
                 if args.test:
-                    self.logger.info("Running client in test mode")
-                    return client.Application().run("dev")
+                    if args.laptop:
+                        self.logger.info("Running client in test mode for laptop")
+                        return client.Application().run("dev", "laptop")
+                    elif args.beetle:
+                        self.logger.info("Running client in test mode for beetle")
+                        return client.Application().run("dev", "beetle")
                 else:
-                    self.logger.info("Running client")
-                    return client.Application().run("prod")
+                    if args.laptop:
+                        self.logger.info("Running client in prod mode for laptop")
+                        return client.Application().run("prod", "laptop")
+                    elif args.beetle:
+                        self.logger.info("Running client in prod mode for beetle")
+                        return client.Application().run("prod", "beetle")
             elif args.live:
                 return client_live.Application().run()
         except Exception as e:

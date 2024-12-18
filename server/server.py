@@ -138,6 +138,7 @@ class Application:
         if mic_value is not None and second_metric is not None:
             self.logger.info(f"Received mic_value: {mic_value}, second_metric: {second_metric}")
             # Process the metrics as needed
+            
         else:
             self.logger.error("Missing mic_value or second_metric in the received data")
             return jsonify({"status": "error", "message": "Invalid data format"}), 400

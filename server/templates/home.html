@@ -25,14 +25,14 @@
     </section>
 
     <!-- Historical Data Section -->
-    <h2>Historical Data</h2>
+    <h2>Historical Data</h2>     
       {% for device_name, metrics in metrics_data.items() %}
       <article>
         <h3>{{ device_name }}</h3>
           {% for metric_type_name, data_points in metrics.items() %}
           <div>
             <h4>{{ metric_type_name }}</h4>
-            <canvas id="history-{{ loop.index }}" width="400" height="200"></canvas>
+            <canvas id="history-{{ device_name | replace(' ', '-') }}-{{ metric_type_name | replace(' ', '-') }}" width="400" height="200"></canvas>
           </div>
         {% endfor %}
       </article>
@@ -49,10 +49,13 @@
       updateLiveData(data);
     });
 
+
     document.addEventListener('DOMContentLoaded', function() {
       console.log('DOM fully loaded and parsed');
       const metricsData = JSON.parse('{{ metrics_data | tojson | safe }}');
       console.log('Metrics data:', metricsData);
+
+      
       
       Object.keys(metricsData).forEach((deviceName, deviceIndex) => {
         console.log(`Processing device: ${deviceName}`);
@@ -62,7 +65,7 @@
           console.log(`Processing metric type: ${metricTypeName}`);
           const dataPoints = deviceMetrics[metricTypeName];
           const labels = dataPoints.map((point, index) => index % 100 === 0 ? index : '');
-          const ctx = document.getElementById(`history-${deviceIndex * Object.keys(deviceMetrics).length + metricIndex + 1}`).getContext('2d');
+          const ctx = document.getElementById(`history-${deviceName.replace(' ', '-')}-${metricTypeName.replace(' ', '-')}`).getContext('2d');
             new Chart(ctx, {
             type: 'line',
             data: {

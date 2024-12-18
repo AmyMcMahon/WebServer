@@ -15,17 +15,15 @@ class Application:
         self.logger.info("Live Client initialized")
 
         if "-test" in sys.argv:
-            host = self.config.get('web.development.host')
-            port = self.config.get('web.development.port')
+            self.url = f"http://{self.config.get('web.development.host')}:{self.config.get('web.development.port')}/upload_metrics"
         else:
-            host = self.config.get('web.production.host')
-            port = self.config.get('web.production.port')
-        self.url = f"http://{host}:{port}/upload_metrics"
+            self.url = f"https://webserver-6n25.onrender.com"
+        
         self.logger.info(f"Server URL: {self.url}")
 
         # SocketIO client setup
         self.sio = socketio.Client(logger=True, engineio_logger=True)
-
+    
         @self.sio.event
         def connect():
             self.logger.info("Connected to server successfully.")
