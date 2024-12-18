@@ -2,6 +2,7 @@ import logging
 import socket
 import sys
 import time
+import os
 from sqlalchemy import create_engine, func
 from sqlalchemy import inspect
 from sqlalchemy.orm import Session, joinedload
@@ -30,6 +31,7 @@ class Application:
             db_connection_string = os.getenv("EXTERNAL_DB")
             self.logger.info("Using development database connection string")
         else:
+            load_dotenv()
             db_connection_string = os.environ.get('DATABASE_URL')
             self.logger.info("Using prod database connection string")
 
